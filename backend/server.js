@@ -12,5 +12,6 @@ mongoose
   .then(() => console.log("MongoDB Connected"));
 
 app.use("/api/leads", require("./routes/LeadRoutes"));
+app.use("/api/auth", require("./routes/authRoutes"));
 
 app.listen(5000, () => console.log("Server running on 5000"));
