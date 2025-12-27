@@ -11,5 +11,3 @@ module.exports = mongoose.model(
     action: String,
   })
 );
-
-//above is the model for storing the lead data in mongodb database
