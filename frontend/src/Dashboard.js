@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [leads, setLeads] = useState([]);
   const [lead, setLead] = useState({});
   const [editing, setEditing] = useState(null);
+  const [sortBy, setSortBy] = useState("priority");
 
   const loadLeads = async () => {
     try {
@@ -98,6 +99,23 @@ export default function Dashboard() {
     name: s,
     count: leads.filter((l) => l.stage === s).length,
   }));
+
+  // Sorting logic
+  const getPriorityOrder = (priority) => {
+    const order = { "Very High": 4, High: 3, Medium: 2, Low: 1 };
+    return order[priority] || 0;
+  };
+
+  const sortedLeads = [...leads].sort((a, b) => {
+    if (sortBy === "priority") {
+      return getPriorityOrder(b.priority) - getPriorityOrder(a.priority);
+    } else if (sortBy === "score") {
+      return b.score - a.score;
+    } else if (sortBy === "name") {
+      return a.name.localeCompare(b.name);
+    }
+    return 0;
+  });
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
@@ -351,6 +369,76 @@ export default function Dashboard() {
         >
           Leads ({leads.length})
         </h3>
+
+        {/* Sorting Controls */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "20px",
+            marginBottom: "20px",
+            padding: "15px",
+            backgroundColor: "#2a2a2a",
+            borderRadius: "10px",
+            border: "1px solid #444",
+          }}
+        >
+          <label
+            style={{
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+          >
+            <input
+              type="radio"
+              name="sort"
+              value="priority"
+              checked={sortBy === "priority"}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{ accentColor: "#64b5f6" }}
+            />
+            Sort by Priority
+          </label>
+          <label
+            style={{
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+          >
+            <input
+              type="radio"
+              name="sort"
+              value="score"
+              checked={sortBy === "score"}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{ accentColor: "#64b5f6" }}
+            />
+            Sort by Score
+          </label>
+          <label
+            style={{
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+          >
+            <input
+              type="radio"
+              name="sort"
+              value="name"
+              checked={sortBy === "name"}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{ accentColor: "#64b5f6" }}
+            />
+            Sort by Name
+          </label>
+        </div>
+
         <div
           style={{
             backgroundColor: "#1e1e1e",
@@ -467,7 +555,7 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {leads.map((l) => (
+              {sortedLeads.map((l) => (
                 <tr
                   key={l._id}
                   style={{
