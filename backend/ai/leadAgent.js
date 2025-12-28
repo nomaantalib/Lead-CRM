@@ -2,9 +2,10 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 module.exports = async (lead) => {
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-  const prompt = `
+    const prompt = `
 Analyze this sales lead and return JSON only:
 Name: ${lead.name}
 Email: ${lead.email}
@@ -20,9 +21,19 @@ Based on the information, determine:
 Return only valid JSON like: {"score": 85, "priority": "High", "action": "Call within 24 hours"}
 `;
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
-  // Clean the response to ensure it's valid JSON
-  const cleaned = text.replace(/```json\n?|\n?```/g, "").trim();
-  return JSON.parse(cleaned);
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    // Clean the response to ensure it's valid JSON
+    const cleaned = text.replace(/```json\n?|\n?```/g, "").trim();
+    const parsed = JSON.parse(cleaned);
+    return parsed;
+  } catch (error) {
+    console.error("AI Agent Error:", error);
+    // Return default values if AI fails
+    return {
+      score: 50,
+      priority: "Medium",
+      action: "Review manually",
+    };
+  }
 };
