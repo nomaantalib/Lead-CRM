@@ -28,9 +28,16 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadLeads();
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(loadLeads, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const addLead = async () => {
+    if (!lead.name || !lead.email) {
+      alert("Name and Email are required");
+      return;
+    }
     try {
       await api.post("/leads", lead);
       setLead({});
@@ -58,6 +65,16 @@ export default function Dashboard() {
       } catch (error) {
         alert("Failed to delete lead");
       }
+    }
+  };
+
+  const rescoreLead = async (id) => {
+    try {
+      await api.put(`/leads/${id}/score`);
+      loadLeads();
+      alert("Lead re-scored!");
+    } catch (error) {
+      alert("Failed to re-score lead");
     }
   };
 
@@ -100,6 +117,10 @@ export default function Dashboard() {
       {/* Add Lead Form */}
       <div style={{ border: "1px solid #ccc", padding: 20, marginBottom: 20 }}>
         <h3>Add New Lead</h3>
+        <p style={{ fontSize: "12px", color: "#666" }}>
+          💡 <strong>Pro Tip:</strong> Include keywords like "budget", "urgent",
+          "approved", "demo" in your message for higher AI scores!
+        </p>
         <input
           placeholder="Name"
           value={lead.name || ""}
@@ -125,7 +146,7 @@ export default function Dashboard() {
           style={{ display: "block", margin: "10px 0", width: "100%" }}
         />
         <textarea
-          placeholder="Message"
+          placeholder="Message (include keywords like 'budget approved', 'urgent need', 'schedule demo')"
           value={lead.message || ""}
           onChange={(e) => setLead({ ...lead, message: e.target.value })}
           style={{
@@ -241,7 +262,31 @@ export default function Dashboard() {
                 )}
               </td>
               <td style={{ border: "1px solid #ccc", padding: 8 }}>
-                {l.score}
+                <span
+                  style={{
+                    color:
+                      l.score >= 80
+                        ? "#28a745"
+                        : l.score >= 60
+                        ? "#ffc107"
+                        : l.score >= 40
+                        ? "#fd7e14"
+                        : "#dc3545",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {l.score}
+                </span>
+                <br />
+                <small style={{ color: "#666" }}>
+                  {l.score >= 80
+                    ? "Hot"
+                    : l.score >= 60
+                    ? "Warm"
+                    : l.score >= 40
+                    ? "Medium"
+                    : "Cold"}
+                </small>
               </td>
               <td style={{ border: "1px solid #ccc", padding: 8 }}>
                 {editing === l._id ? (
@@ -314,6 +359,7 @@ export default function Dashboard() {
                 ) : (
                   <>
                     <button onClick={() => setEditing(l._id)}>Edit</button>
+                    <button onClick={() => rescoreLead(l._id)}>Re-score</button>
                     <button onClick={() => deleteLead(l._id)}>Delete</button>
                   </>
                 )}

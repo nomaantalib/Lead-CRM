@@ -42,3 +42,20 @@ exports.deleteLead = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.rescoreLead = async (req, res) => {
+  try {
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    const ai = await aiAgent(lead);
+    lead.score = ai.score;
+    lead.priority = ai.priority;
+    lead.action = ai.action;
+    await lead.save();
+
+    res.json(lead);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
