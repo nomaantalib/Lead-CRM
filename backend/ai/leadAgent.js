@@ -6,32 +6,32 @@ module.exports = async (lead) => {
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `
-You are an expert sales lead scorer. Analyze this lead carefully and assign a score based on these rules:
+You are an expert sales lead scorer. Analyze this lead and follow these exact steps:
 
-BASE SCORING (0-40 points):
-- Complete info (name, email, company, phone): +30 points
-- Partial info (name + email): +20 points
-- Minimal info: +10 points
+1. Check for HIGH INTENT KEYWORDS (case-insensitive): budget, approved, urgent, immediately, asap, deadline, decision, purchase, buy, invest, contract, proposal, demo, meeting, call
+   - Count how many are present in the message
 
-KEYWORD BOOSTERS (0-40 points):
-High Intent Keywords (+10-15 each): budget, approved, urgent, immediately, asap, deadline, decision, purchase, buy, invest, contract, proposal, demo, meeting, call
-Medium Intent Keywords (+5-10 each): interested, consider, evaluate, explore, research, compare, need, require, looking for, solution
-Low Intent Keywords (+1-3 each): maybe, perhaps, think, might, possibly, info, details, learn more
+2. Calculate BASE SCORE (0-40):
+   - Complete info (name, email, company, phone): 30
+   - Partial info (name + email): 20
+   - Minimal info: 10
 
-COMPANY SIGNALS (+0-20 points):
-- Fortune 500/large corp: +20
-- Known company: +15
-- Startup/SMB: +10
-- No company: 0
+3. Calculate KEYWORD SCORE (0-40):
+   - Each high intent keyword: +15 points
+   - Each medium intent keyword: +8 points
+   - Each low intent keyword: +2 points
 
-MESSAGE QUALITY (+0-20 points):
-- Detailed (100+ chars): +15
-- Specific requirements: +10
-- Vague/general: +5
+4. Calculate TOTAL SCORE = Base + Keyword Score (max 100)
 
-FINAL SCORE: Base + Boosters + Company + Quality (capped at 100)
+5. Determine PRIORITY:
+   - If any high intent keyword found: "Very High"
+   - Else if total score >= 60: "High"
+   - Else if total score >= 30: "Medium"
+   - Else: "Low"
 
-Return ONLY JSON: {"score": number, "priority": "High/Medium/Low", "action": "brief action"}
+6. Suggest ACTION based on priority and content
+
+Return ONLY valid JSON: {"score": number, "priority": "Very High/High/Medium/Low", "action": "brief action text"}
 
 Lead Data:
 Name: ${lead.name || "Unknown"}
@@ -53,9 +53,118 @@ Message: ${lead.message || "No message"}
       return parsed;
     }
 
-    return { score: 50, priority: "Medium", action: "Review lead details" };
+    console.log("No JSON found in AI response, using fallback");
+    return fallbackScoring(lead);
   } catch (error) {
-    console.log("AI Error, using defaults");
-    return { score: 50, priority: "Medium", action: "Review lead details" };
+    console.log("AI Error:", error.message);
+    console.log("Using fallback keyword detection");
+    return fallbackScoring(lead);
   }
 };
+
+// Fallback scoring function that works without AI
+function fallbackScoring(lead) {
+  const message = (lead.message || "").toLowerCase();
+
+  // High intent keywords
+  const highIntentKeywords = [
+    "budget",
+    "approved",
+    "urgent",
+    "immediately",
+    "asap",
+    "deadline",
+    "decision",
+    "purchase",
+    "buy",
+    "invest",
+    "contract",
+    "proposal",
+    "demo",
+    "meeting",
+    "call",
+  ];
+
+  // Medium intent keywords
+  const mediumIntentKeywords = [
+    "interested",
+    "consider",
+    "evaluate",
+    "explore",
+    "research",
+    "compare",
+    "need",
+    "require",
+    "looking for",
+    "solution",
+  ];
+
+  // Low intent keywords
+  const lowIntentKeywords = [
+    "maybe",
+    "perhaps",
+    "think",
+    "might",
+    "possibly",
+    "info",
+    "details",
+    "learn more",
+  ];
+
+  // Count keywords
+  let highCount = 0;
+  let mediumCount = 0;
+  let lowCount = 0;
+
+  highIntentKeywords.forEach((keyword) => {
+    if (message.includes(keyword)) highCount++;
+  });
+
+  mediumIntentKeywords.forEach((keyword) => {
+    if (message.includes(keyword)) mediumCount++;
+  });
+
+  lowIntentKeywords.forEach((keyword) => {
+    if (message.includes(keyword)) lowCount++;
+  });
+
+  // Base score
+  let baseScore = 10; // minimal
+  if (lead.name && lead.email && lead.company && lead.phone) {
+    baseScore = 30; // complete
+  } else if (lead.name && lead.email) {
+    baseScore = 20; // partial
+  }
+
+  // Keyword score
+  const keywordScore = highCount * 15 + mediumCount * 8 + lowCount * 2;
+
+  // Total score
+  const totalScore = Math.min(100, baseScore + keywordScore);
+
+  // Priority
+  let priority = "Low";
+  if (highCount > 0) {
+    priority = "Very High";
+  } else if (totalScore >= 60) {
+    priority = "High";
+  } else if (totalScore >= 30) {
+    priority = "Medium";
+  }
+
+  // Action
+  let action = "Review lead details";
+  if (priority === "Very High") {
+    action = "Contact immediately - high intent detected";
+  } else if (priority === "High") {
+    action = "Follow up within 24 hours";
+  } else if (priority === "Medium") {
+    action = "Add to nurture campaign";
+  }
+
+  return {
+    score: totalScore,
+    priority: priority,
+    action: action,
+  };
+}
