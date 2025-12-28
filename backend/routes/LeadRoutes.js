@@ -1,16 +1,10 @@
 const router = require("express").Router();
-const Lead = require("../models/Lead");
-const aiAgent = require("../ai/leadAgent");
+const leadController = require("../controllers/leadController");
 const auth = require("../middleware/auth");
 
-router.post("/", auth, async (req, res) => {
-  const ai = await aiAgent(req.body);
-  const lead = await Lead.create({ ...req.body, ...ai });
-  res.json(lead);
-});
-
-router.get("/", auth, async (_, res) => {
-  res.json(await Lead.find());
-});
+router.get("/", auth, leadController.getAllLeads);
+router.post("/", auth, leadController.createLead);
+router.put("/:id", auth, leadController.updateLead);
+router.delete("/:id", auth, leadController.deleteLead);
 
 module.exports = router;

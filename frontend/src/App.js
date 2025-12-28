@@ -1,22 +1,17 @@
-import { useEffect, useState } from "react";
+import Dashboard from "./Dashboard";
+import Login from "./Login";
+import Register from "./Register";
 
 export default function App() {
-  const [leads, setLeads] = useState([]);
+  const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    fetch("http://localhost:5000/api/leads")
-      .then((res) => res.json())
-      .then(setLeads);
-  }, []);
-
-  return (
-    <div style={{ padding: 20 }}>
-      <h2>AI Sales CRM</h2>
-      {leads.map((l) => (
-        <div key={l._id}>
-          <b>{l.name}</b> | Score: {l.score} | {l.priority}
-        </div>
-      ))}
-    </div>
-  );
+  if (!token) {
+    return (
+      <>
+        <Login />
+        <Register />
+      </>
+    );
+  }
+  return <Dashboard />;
 }

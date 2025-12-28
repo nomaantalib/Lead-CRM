@@ -9,5 +9,8 @@ module.exports = mongoose.model(
     score: Number,
     priority: String,
     action: String,
+    stage: { type: String, default: "Prospect" }, // Sales pipeline stages
+    company: String,
+    phone: String,
   })
 );
