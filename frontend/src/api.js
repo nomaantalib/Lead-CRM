@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = process.env.REACT_APP_API || "http://localhost:5000/api";
+const API = process.env.REACT_APP_API || "https://lead-crm-1.onrender.com";
 
 const instance = axios.create({
   baseURL: API,
