@@ -57,14 +57,14 @@ export default function Dashboard() {
       alert("Failed to update lead");
     }
   };
-
   const deleteLead = async (id) => {
     if (window.confirm("Delete this lead?")) {
       try {
         await api.delete(`/leads/${id}`);
         loadLeads();
-      } catch (error) {
+      } catch (err) {
         alert("Failed to delete lead");
+        console.error(err);
       }
     }
   };
