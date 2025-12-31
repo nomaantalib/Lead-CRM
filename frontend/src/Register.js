@@ -8,7 +8,7 @@ export default function Register() {
   const register = async () => {
     setLoading(true);
     try {
-      await api.post("/auth/register", form);
+      await api.post("/api/auth/register", form);
       alert("Registered! Now login.");
       setForm({});
     } catch (error) {

@@ -9,7 +9,7 @@ export default function Login() {
   const login = async () => {
     setLoading(true);
     try {
-      const res = await api.post("/auth/login", { email, password });
+      const res = await api.post("/api/auth/login", { email, password });
       if (res.token) {
         localStorage.setItem("token", res.token);
         window.location.reload();

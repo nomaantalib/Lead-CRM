@@ -20,7 +20,7 @@ export default function Dashboard() {
 
   const loadLeads = async () => {
     try {
-      const data = await api.get("/leads");
+      const data = await api.get("/api/leads");
       setLeads(data);
     } catch (error) {
       alert("Failed to load leads");
@@ -40,7 +40,7 @@ export default function Dashboard() {
       return;
     }
     try {
-      await api.post("/leads", lead);
+      await api.post("/api/leads", lead);
       setLead({});
       loadLeads();
     } catch (error) {
@@ -50,7 +50,7 @@ export default function Dashboard() {
 
   const updateLead = async (id, updates) => {
     try {
-      await api.put(`/leads/${id}`, updates);
+      await api.put(`/api/leads/${id}`, updates);
       loadLeads();
       setEditing(null);
     } catch (error) {
@@ -60,7 +60,7 @@ export default function Dashboard() {
   const deleteLead = async (id) => {
     if (window.confirm("Delete this lead?")) {
       try {
-        await api.delete(`/leads/${id}`);
+        await api.delete(`/api/leads/${id}`);
         loadLeads();
       } catch (err) {
         alert("Failed to delete lead");
@@ -71,7 +71,7 @@ export default function Dashboard() {
 
   const rescoreLead = async (id) => {
     try {
-      await api.put(`/leads/${id}/score`);
+      await api.put(`/api/leads/${id}/score`);
       loadLeads();
       alert("Lead re-scored!");
     } catch (error) {
