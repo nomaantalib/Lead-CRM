@@ -2,6 +2,8 @@
 
 A fully functional MERN stack CRM application inspired by Salesforce Agentforce, featuring AI-powered lead scoring and management.
 
+## MVP LINK :
+ - ** https://lead-crm-frontend.onrender.com**
 ## Features
 
 - **AI Lead Scoring**: Automatically scores leads using Google Gemini AI based on lead data
